@@ -1,7 +1,6 @@
 asyncio
 binascii
+streamlit
 gtts
-tempfile
-os
 pygame
 bleak
