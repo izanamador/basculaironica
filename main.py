@@ -4,14 +4,10 @@ import streamlit as st
 from gtts import gTTS
 import tempfile
 import os
-import pygame
 from bleak import BleakScanner
 import json
 import random
 import time
-
-# Inicializar pygame
-pygame.mixer.init()
 
 # Variables para almacenar el último peso y el tiempo en que se empezó a recibir
 last_weight = None
@@ -40,32 +36,20 @@ async def get_scale_data(address: str):
         await stop_event.wait()
     return data
 
-# Función para reproducir mensaje de voz
-def speak_message(message):
-    temp_audio_path = None  # Inicializamos la variable para manejar el archivo después
+# Función para generar archivo de audio con st.audio
+def generar_audio(message):
     try:
         # Crear un archivo temporal de audio
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_audio:
             tts = gTTS(text=message, lang='es')
             tts.save(temp_audio.name)
-            temp_audio_path = temp_audio.name
+        
+        # Retornar el archivo de audio temporal
+        return temp_audio.name
 
-        # Verificar si el archivo se creó correctamente
-        if os.path.exists(temp_audio_path):
-            pygame.mixer.music.load(temp_audio_path)
-            pygame.mixer.music.play()
-            # Esperar a que termine la reproducción
-            while pygame.mixer.music.get_busy():
-                pygame.time.Clock().tick(10)
     except Exception as e:
-        print(f"Error en la reproducción del mensaje: {e}")
-    finally:
-        # Eliminar el archivo temporal si existe y no está en uso
-        if temp_audio_path and os.path.exists(temp_audio_path):
-            try:
-                os.remove(temp_audio_path)
-            except PermissionError:
-                print(f"El archivo {temp_audio_path} está en uso y no se pudo eliminar.")
+        print(f"Error al generar el audio: {e}")
+        return None
 
 # Función de Streamlit para mostrar los datos
 def main():
@@ -113,9 +97,13 @@ def main():
                     # Generar siempre un mensaje irónico independientemente del peso
                     message = f"Pesas {weight} kilos. {mensaje_ironico}"
                     
-                    # Mostrar el mensaje en la interfaz y reproducirlo
+                    # Mostrar el mensaje en la interfaz
                     st.write(message)
-                    speak_message(message)
+                    
+                    # Generar el archivo de audio y mostrar el botón de reproducción
+                    audio_path = generar_audio(message)
+                    if audio_path:
+                        st.audio(audio_path, format="audio/mp3")
 
                     stable_weight_time = None  # Reiniciar la cuenta para futuras lecturas estables
             else:
