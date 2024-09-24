@@ -1,5 +1,3 @@
-asyncio
-binascii
 streamlit
 gtts
 pygame
