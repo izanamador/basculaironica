@@ -1,0 +1,7 @@
+asyncio
+binascii
+gtts
+tempfile
+os
+pygame
+bleak
